@@ -1,0 +1,87 @@
+---
+title: "flat_get_one_file_size.Rmd empty"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+```
+
+<!--
+ You need to run the 'description' chunk in the '0-dev_history.Rmd' file before continuing your code there.
+-->
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+```
+
+# get_one_file_size
+
+```{r development}
+
+```
+
+
+
+
+```{r get_one_file_size-first}
+#' get_one_file_size 
+#'
+#' @param file a file
+#'
+#' @return a dataframe with filenamea and size
+#' @export
+#'
+#' @examples
+get_one_file_size <- function(file) {
+  if (file.exists(file)) {
+    size <- file.size(file)
+  } else {
+    size <- NA
+  }
+  result <- data.frame(name = file, size = size, stringsAsFactors = FALSE)
+  return(result)
+}
+```
+
+```{r examples-first}
+get_one_file_size(file = "analyse_facto.Rmd")
+```
+
+```{r tests-first}
+test_that("get_one_file_size works for existing files", {
+  temp_file_1 <- tempfile()
+  writeLines("Test content", temp_file_1)
+  
+  result <- get_one_file_size(temp_file_1)
+  expect_equal(result$name, temp_file_1)
+  expect_equal(result$size, file.size(temp_file_1))
+})
+
+test_that("get_one_file_size works for larger files", {
+  # Créer un autre fichier temporaire avec plus de contenu
+  temp_file_2 <- tempfile()
+  writeLines("Another test content with more text", temp_file_2)
+  
+  result <- get_one_file_size(temp_file_2)
+  expect_equal(result$name, temp_file_2)
+  expect_equal(result$size, file.size(temp_file_2))
+})
+
+test_that("get_one_file_size returns NA for non-existing files", {
+  result <- get_one_file_size("non_existing_file.txt")
+  expect_equal(result$name, "non_existing_file.txt")
+  expect_true(is.na(result$size))
+})
+
+```
+
+
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(flat_file = "dev/flat_first.Rmd", vignette_name = "Minimal")
+```
