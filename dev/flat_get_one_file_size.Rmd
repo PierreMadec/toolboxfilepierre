@@ -8,6 +8,7 @@ editor_options:
 ```{r development, include=FALSE}
 library(testthat)
 library(tools)
+library(purrr)
 ```
 
 <!--
@@ -28,12 +29,13 @@ pkgload::load_all(export_all = FALSE)
 
 
 
-```{r get_one_file_size-first}
+```{r function-get_one_file_size}
 #' get_one_file_size 
 #'
 #' @param file a file
-#'
+#' @importFrom tools file_ext
 #' @return a dataframe with filename, size and extension
+#' 
 #' @export
 #'
 #' @examples
@@ -42,49 +44,98 @@ get_one_file_size <- function(file) {
     size <- file.size(file)
     extension <- tools::file_ext(file)
   } else {
-    size <- NA
-    extension <- NA
+    stop("Le fichier n'existe pas")
   }
   result <- data.frame(name = file, size = size, extension=extension, stringsAsFactors = FALSE)
   return(result)
 }
 ```
 
-```{r examples-first}
-get_one_file_size(file = "analyse_facto.Rmd")
+```{r examples-get_one_file_size}
+temp_file_1 <- tempfile()
+writeLines("Test content", temp_file_1)
+get_one_file_size(temp_file_1)
 ```
 
-```{r tests-first}
-test_that("get_one_file_size works for existing files", {
-  temp_file_1 <- tempfile()
-  writeLines("Test content", temp_file_1)
+```{r tests-get_one_file_size}
+test_that("get_one_file_size works for an existing file", {
+  # Créer un fichier temporaire
+  temp_file <- tempfile(fileext = ".txt")
+  writeLines("Test content", temp_file)
   
-  result <- get_one_file_size(temp_file_1)
-  expect_equal(result$name, temp_file_1)
-  expect_equal(result$size, file.size(temp_file_1))
-})
-
-test_that("get_one_file_size works for larger files", {
-  # Créer un autre fichier temporaire avec plus de contenu
-  temp_file_2 <- tempfile()
-  writeLines("Another test content with more text", temp_file_2)
+  result <- get_one_file_size(temp_file)
   
-  result <- get_one_file_size(temp_file_2)
-  expect_equal(result$name, temp_file_2)
-  expect_equal(result$size, file.size(temp_file_2))
+  expect_equal(result$name, temp_file)
+  expect_equal(result$size, file.size(temp_file))
+  expect_equal(result$extension, "txt")
 })
 
-test_that("get_one_file_size returns NA for non-existing files", {
-  result <- get_one_file_size("non_existing_file.txt")
-  expect_equal(result$name, "non_existing_file.txt")
-  expect_true(is.na(result$size))
+test_that("get_one_file_size throws an error for a non-existing file", {
+  non_existing_file <- tempfile(fileext = ".txt")
+  unlink(non_existing_file)  # S'assurer que le fichier n'existe pas
+  
+  expect_error(get_one_file_size(non_existing_file), "Le fichier n'existe pas")
 })
 
+test_that("get_one_file_size handles empty files correctly", {
+  # Créer un fichier temporaire vide
+  empty_file <- tempfile(fileext = ".md")
+  file.create(empty_file)
+  
+  result <- get_one_file_size(empty_file)
+  
+  expect_equal(result$name, empty_file)
+  expect_equal(result$size, 0)
+  expect_equal(result$extension, "md")
+})
+
+test_that("get_one_file_size handles files with no extension correctly", {
+  # Créer un fichier temporaire sans extension
+  no_ext_file <- tempfile()
+  writeLines("No extension content", no_ext_file)
+  
+  result <- get_one_file_size(no_ext_file)
+  
+  expect_equal(result$name, no_ext_file)
+  expect_equal(result$size, file.size(no_ext_file))
+  expect_equal(result$extension, "")
+})
 ```
 
+# get_all_file_size
+    
+```{r function-get_all_file_size}
+#' get_all_file_size
+#' 
+#' Elle prend un chemin de dossier en paramètre, et map la fonction get_one_file_size pour n’obtenir qu’un seul tableau.
+#' 
+#' @param path un chemin
+#' @importFrom purrr map
+#' @importFrom dplyr bind_rows
+#' @return un tableau
+#' 
+#' @export
+#' 
+#' 
+get_all_file_size <- function(path) {
+  files <- list.files(path, full.names = TRUE)
+  result <- purrr::map(files, get_one_file_size) |> dplyr::bind_rows()
+  return(result)
+}
+
+```
+  
+```{r example-get_all_file_size}
+get_all_file_size(path = ".")
+```
+  
+```{r tests-get_all_file_size}
+test_that("get_all_file_size works", {
+  expect_true(inherits(get_all_file_size, "function")) 
+})
+```
+  
 
 ```{r development-inflate, eval=FALSE}
-# Run but keep eval=FALSE to avoid infinite loop
-# Execute in the console directly
-fusen::inflate(flat_file = "dev/flat_first.Rmd", vignette_name = "get_one")
+fusen::inflate(flat_file = "dev/flat_get_one_file_size.Rmd", vignette_name = "get_one", open_vignette = FALSE, overwrite = TRUE)
 ```

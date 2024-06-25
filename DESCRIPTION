@@ -6,6 +6,10 @@ Authors@R:
            comment = c(ORCID = "0000-0000-0000-0000"))
 Description: package de la session en autonomie 2.
 License: MIT + file LICENSE
+Imports: 
+    dplyr,
+    purrr,
+    tools
 Suggests: 
     knitr,
     rmarkdown,
