@@ -1,8 +1,8 @@
 ---
-title: "Minimal"
+title: "get_one"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{minimal}
+  %\VignetteIndexEntry{get_one}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
